@@ -1,7 +1,7 @@
 # Android-Based2
 用于学习Android基础知识，参考书《Android编程权威指南中文第3版》
-##1.GeoQuiz
-##对应章节		1—6章
+## 1.GeoQuiz
+## 对应章节		1—6章
 Android应用的基本组成、activity、界面布局以及显式intent
 
  2.CriminalIntent
