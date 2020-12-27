@@ -16,6 +16,7 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -44,6 +45,7 @@ import androidx.fragment.app.FragmentManager;
 public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final String DIALOG_PHOTO = "DialogPhoto";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_CONTACT = 1;
     private static final int REQUEST_PHOTO = 2;
@@ -174,7 +176,16 @@ public class CrimeFragment extends Fragment {
             }
             startActivityForResult(captureImage,REQUEST_PHOTO);
         });
-        updatePhotoView();
+        ViewTreeObserver mPhotoObserver = mPhotoView.getViewTreeObserver();
+        mPhotoObserver.addOnGlobalLayoutListener(()-> updatePhotoView(mPhotoView.getWidth(),mPhotoView.getHeight()));
+
+        //点击图片显示大图片功能
+        mPhotoView.setOnClickListener((v)->{
+            if (mPhotoFile == null || !mPhotoFile.exists())return;//no photo
+            FragmentManager fm = getFragmentManager();
+            CrimePhotoDialogFragment  dialogFragment = CrimePhotoDialogFragment.newInstance(mPhotoFile.getPath());
+            dialogFragment.show(fm,DIALOG_PHOTO);
+        });
         return view;
     }
 
@@ -215,17 +226,16 @@ public class CrimeFragment extends Fragment {
         }else if (requestCode == REQUEST_PHOTO){
             Uri uri = FileProvider.getUriForFile(getActivity(),"com.suse.criminalintent.fileprovider",mPhotoFile);
             getActivity().revokeUriPermission(uri,Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            updatePhotoView();
         }
     }
-    private void updatePhotoView(){
+    private void updatePhotoView(int width,int height){
         if (mPhotoFile == null || !mPhotoFile.exists()){
             mPhotoView.setImageDrawable(null);
         }else {
-            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(),getActivity());
+            //Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(),getActivity());
+            Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(),width,height);
             mPhotoView.setImageBitmap(bitmap);
         }
-
     }
     private void updateDate() {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
